@@ -34,11 +34,11 @@ jobs:
         run: docker build . --file Dockerfile --tag stock-price-service:$(date +%s)
 
   push:
-    - name: Push Docker image
-      needs: [ build-docker-image ]
-      runs-on: ubuntu-latest
+    name: Push Docker image
+    needs: [ build-docker-image ]
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Push the Docker image
-        - run: |-
-            docker push fozat/stock-price-service:$(date +%s)
+    steps:
+      - name: Push the Docker image
+      - run: |-
+          docker push fozat/stock-price-service:$(date +%s)
