@@ -40,5 +40,5 @@ jobs:
 
     steps:
       - name: Push the Docker image
-      - run: |-
+        run: |-
           docker push fozat/stock-price-service:$(date +%s)
