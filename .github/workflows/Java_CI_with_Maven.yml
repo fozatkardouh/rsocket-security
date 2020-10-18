@@ -7,7 +7,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-with-maven:
+    name: Build with maven
     runs-on: ubuntu-latest
 
     steps:
@@ -18,6 +19,11 @@ jobs:
           java-version: 14
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+
+      - name: info on env
+        run: pwd
+      - run: ls
+      - run: ls target
 
       - uses: actions/checkout@v2
       - name: Build the Docker image
