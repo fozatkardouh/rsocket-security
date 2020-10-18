@@ -18,14 +18,14 @@ jobs:
           java-version: 14
 
   build-with-maven:
-    - name: Build with Maven
-      needs: [ setup-infrastructer ]
-      runs-on: ubuntu-latest
+    name: Build with Maven
+    needs: [ setup-infrastructer ]
+    runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/checkout@v2
-        - name: Build with Maven
-          run: mvn -B package --file pom.xml
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
 
   build-docker-image:
     name: Build Docker Image
