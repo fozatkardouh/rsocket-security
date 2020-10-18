@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 
 @Log
 @Service
@@ -19,19 +18,22 @@ public class StockPricesService {
 
     private final Map<String, Flux<StockPrice>> pricesForStock = new ConcurrentHashMap<>();
 
-    public Flux<StockPrice> doProcessRequest(StockPriceRSocketRequest request) {
-        return pricesForStock.computeIfAbsent(request.getStockName(), createStockPriceFlux(request));
+    public Flux<StockPrice> doProcessRequest(final StockPriceRSocketRequest request) {
+        return pricesForStock.computeIfAbsent(request.getStockName(), (stockName) -> createStockPriceFlux(request));
     }
 
-    private Function<String, Flux<StockPrice>> createStockPriceFlux(final StockPriceRSocketRequest request) {
-        return fun -> Flux.interval(Duration.ofSeconds(request.getInterval()))
-                          .map(index -> mapToStockPrice(request))
-                          .log();
+    private Flux<StockPrice> createStockPriceFlux(final StockPriceRSocketRequest request) {
+        return Flux.interval(Duration.ofSeconds(request.getInterval()))
+                   .map(index -> mapToStockPrice(request.getStockName()));
     }
 
-    private StockPrice mapToStockPrice(StockPriceRSocketRequest request) {
-        log.info(String.format("New subscription for symbol %s.", request.getStockName()));
-        return new StockPrice(request.getStockName(), randomStockPrice(), LocalDateTime.now());
+    private StockPrice mapToStockPrice(final String stockName) {
+        log.info(String.format("New subscription for symbol %s.", stockName));
+        return StockPrice.builder()
+                         .price(randomStockPrice())
+                         .time(LocalDateTime.now())
+                         .stockName(stockName)
+                         .build();
     }
 
     private Double randomStockPrice() {

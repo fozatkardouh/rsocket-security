@@ -25,8 +25,7 @@ public class StockPricesRSocketController {
                                    @AuthenticationPrincipal UserDetails user) {
         return requestFlux.doOnNext(request -> log.info("Requested interval is " + request.getInterval() + " seconds."))
                           .doOnCancel(() -> log.warning("The client cancelled the channel."))
-                          .switchMap(service::doProcessRequest)
-                          .log();
+                          .switchMap(service::doProcessRequest);
     }
 
 }

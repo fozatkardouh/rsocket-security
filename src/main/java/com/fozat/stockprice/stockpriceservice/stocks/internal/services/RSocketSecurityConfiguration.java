@@ -20,26 +20,35 @@ import org.springframework.security.rsocket.core.PayloadSocketAcceptorIntercepto
 public class RSocketSecurityConfiguration {
 
     @Bean
-    RSocketMessageHandler messageHandler(RSocketStrategies strategies) {
-
+    public RSocketMessageHandler messageHandler(RSocketStrategies strategies) {
         RSocketMessageHandler handler = new RSocketMessageHandler();
-        handler.getArgumentResolverConfigurer().addCustomResolver(new AuthenticationPrincipalArgumentResolver());
+
+        handler.getArgumentResolverConfigurer()
+               .addCustomResolver(new AuthenticationPrincipalArgumentResolver());
+
         handler.setRSocketStrategies(strategies);
         return handler;
     }
 
     @Bean
-    MapReactiveUserDetailsService authentication() {
+    public MapReactiveUserDetailsService authentication() {
         //This is NOT intended for production use (it is intended for getting started experience only)
-        UserDetails user = User.withDefaultPasswordEncoder().username("user").password("pass").roles("USER").build();
+        UserDetails user = User.withDefaultPasswordEncoder()
+                               .username("user")
+                               .password("pass")
+                               .roles("USER")
+                               .build();
 
         return new MapReactiveUserDetailsService(user);
     }
 
     @Bean
-    PayloadSocketAcceptorInterceptor authorization(RSocketSecurity security) {
-        security.authorizePayload(authorize -> authorize.anyExchange().authenticated() // all connections, exchanges.
-                                 ).simpleAuthentication(Customizer.withDefaults());
+    public PayloadSocketAcceptorInterceptor authorization(RSocketSecurity security) {
+        security.authorizePayload(authorize -> authorize.anyExchange()
+                                                        .authenticated() // all connections, exchanges.
+                                 )
+                .simpleAuthentication(Customizer.withDefaults());
+
         return security.build();
     }
 
