@@ -23,11 +23,7 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: Build the Docker image
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: fozat/stock-price-service:latest
+        run: docker build . --file Dockerfile --tag stock-price-service:$(date +%s)
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
