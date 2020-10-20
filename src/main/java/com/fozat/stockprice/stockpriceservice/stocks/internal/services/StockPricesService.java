@@ -22,6 +22,8 @@ public class StockPricesService {
         return pricesForStock.computeIfAbsent(request.getStockName(), (stockName) -> createStockPriceFlux(request));
     }
 
+    // can also be written like this, but looks ugly and confusing a bit.
+    // private Function<String, Flux<StockPrice>> createStockPriceFlux(final StockPriceRSocketRequest request) {
     private Flux<StockPrice> createStockPriceFlux(final StockPriceRSocketRequest request) {
         return Flux.interval(Duration.ofSeconds(request.getInterval()))
                    .map(index -> mapToStockPrice(request.getStockName()));
@@ -38,7 +40,7 @@ public class StockPricesService {
 
     private Double randomStockPrice() {
         return ThreadLocalRandom.current()
-                                .nextDouble(100.0);
+                                .nextDouble(100d);
     }
 
 }

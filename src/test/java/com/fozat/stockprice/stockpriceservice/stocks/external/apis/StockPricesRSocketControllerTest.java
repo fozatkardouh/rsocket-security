@@ -29,12 +29,11 @@ class StockPricesRSocketControllerTest {
 
     @BeforeAll
     public static void setupOnce(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port) {
-
         UsernamePasswordMetadata credentials = new UsernamePasswordMetadata("user", "pass");
         MimeType mimeType = MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString());
 
         requester = builder.setupMetadata(credentials, mimeType)
-                           .rsocketStrategies(b -> b.encoder(new SimpleAuthenticationEncoder()))
+                           .rsocketStrategies(strategiesBuilder -> strategiesBuilder.encoder(new SimpleAuthenticationEncoder()))
                            .connectTcp("localhost", port)
                            .block();
     }
@@ -49,13 +48,13 @@ class StockPricesRSocketControllerTest {
         Mono<StockPriceRSocketRequest> setting1 = Mono.just(request1)
                                                       .delayElement(Duration.ofSeconds(0));
 
-        // Create next setting after 3 seconds. Server starts sending in after 1 second.
+        // Create next setting after 5 seconds. Server starts sending after 1 second.
         StockPriceRSocketRequest request2 = StockPriceRSocketRequest.builder()
                                                                     .interval(1)
                                                                     .stockName("TEST2")
                                                                     .build();
         Mono<StockPriceRSocketRequest> setting2 = Mono.just(request2)
-                                                      .delayElement(Duration.ofSeconds(3));
+                                                      .delayElement(Duration.ofSeconds(5));
 
         // Bundle settings into a Flux
         Flux<StockPriceRSocketRequest> settings = Flux.concat(setting1, setting2);
@@ -71,12 +70,17 @@ class StockPricesRSocketControllerTest {
                         assertThat(stockPrice.getStockName()).isEqualTo("TEST1");
                         assertThat(stockPrice.getPrice()).isBetween(0d, 100d);
                     })
-                    .expectNextCount(0)
+                    .expectNextCount(1)
                     .consumeNextWith(stockPrice -> {
                         assertThat(stockPrice.getStockName()).isEqualTo("TEST2");
                     })
+                    .expectNextCount(2)
                     .thenCancel()
-                    .verify();
+                    .verifyThenAssertThat()
+                    .tookMoreThan(Duration.ofSeconds(8));
+        // 8 seconds because the delay for the second request is 5. (will interrupt the cycle of the first request)
+        // another second for the server to respond to the second request
+        // then we wait for 2 responses. So (5 + 1) + 1 + 1
     }
 
     @AfterAll
